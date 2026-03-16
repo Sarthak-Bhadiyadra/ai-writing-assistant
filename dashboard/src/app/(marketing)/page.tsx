@@ -71,7 +71,7 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8"
           >
-            AI Writing Assistant <br />
+            Writing Buddy <br />
             <span className="text-gradient">for the Entire Web</span>
           </motion.h1>
 

@@ -75,7 +75,7 @@ export default function DashboardPage() {
     <div className="space-y-10">
       <header>
         <h1 className="text-4xl font-extrabold tracking-tight mb-2">Overview</h1>
-        <p className="text-text-secondary">Track your writing performance and AI usage.</p>
+        <p className="text-text-secondary">Track your writing performance and Writing Buddy activity.</p>
       </header>
 
       {/* Stats Grid */}

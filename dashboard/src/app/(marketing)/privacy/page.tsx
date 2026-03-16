@@ -9,7 +9,7 @@ export default function PrivacyPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold mb-4 text-text-primary">1. Introduction</h2>
           <p className="text-text-secondary leading-relaxed">
-            AI Writing Assistant ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome Extension and website.
+            Writing Buddy ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome Extension and website.
           </p>
         </section>
 
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-2xl font-bold mb-4 text-text-primary">6. Contact Us</h2>
           <p className="text-text-secondary leading-relaxed">
-            If you have any questions about this Privacy Policy, please contact us at privacy@aiwriter.com.
+            If you have any questions about this Privacy Policy, please contact us at privacy@writingbuddy.com.
           </p>
         </section>
       </div>

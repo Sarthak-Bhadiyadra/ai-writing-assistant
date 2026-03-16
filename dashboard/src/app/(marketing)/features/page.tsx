@@ -19,7 +19,7 @@ export default function FeaturesPage() {
       <div className="text-center mb-24">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">Powerful Writing <span className="text-gradient">Capabilities</span></h1>
         <p className="text-text-secondary max-w-2xl mx-auto text-lg">
-          Discover all the ways AI Writing Assistant can help you communicate more effectively across the web.
+          Discover all the ways Writing Buddy can help you communicate more effectively across the web.
         </p>
       </div>
 

@@ -9,14 +9,14 @@ export default function TermsPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold mb-4 text-text-primary">1. Agreement to Terms</h2>
           <p className="text-text-secondary leading-relaxed">
-            By accessing or using AI Writing Assistant, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our service.
+            By accessing or using Writing Buddy, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our service.
           </p>
         </section>
 
         <section className="mb-10">
           <h2 className="text-2xl font-bold mb-4 text-text-primary">2. Description of Service</h2>
           <p className="text-text-secondary leading-relaxed">
-            AI Writing Assistant provides an AI-powered text improvement tool via a Chrome Extension and web platform. We reserve the right to modify or discontinue any aspect of the service at any time.
+            Writing Buddy provides an AI-powered text improvement tool via a Chrome Extension and web platform. We reserve the right to modify or discontinue any aspect of the service at any time.
           </p>
         </section>
 
@@ -46,7 +46,7 @@ export default function TermsPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold mb-4 text-text-primary">6. Limitation of Liability</h2>
           <p className="text-text-secondary leading-relaxed">
-            AI Writing Assistant is provided "as is". We are not liable for any direct, indirect, or consequential damages resulting from your use of the service.
+            Writing Buddy is provided "as is". We are not liable for any direct, indirect, or consequential damages resulting from your use of the service.
           </p>
         </section>
 

@@ -26,7 +26,6 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
       .select('plan')
       .eq('id', userId)
       .single();
-    console.log("userDatauserData",userData,userError)
     if (userError || !userData) {
         return res.status(500).json({ error: 'User not found' });
     }

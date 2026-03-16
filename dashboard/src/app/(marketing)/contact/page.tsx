@@ -23,8 +23,8 @@ export default function ContactPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold mb-1">Email Us</h3>
-              <p className="text-text-secondary text-sm">support@aiwriter.com</p>
-              <p className="text-text-secondary text-sm">sales@aiwriter.com</p>
+              <p className="text-text-secondary text-sm">support@writingbuddy.com</p>
+              <p className="text-text-secondary text-sm">sales@writingbuddy.com</p>
             </div>
           </div>
 

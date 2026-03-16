@@ -11,7 +11,7 @@ export const Footer = () => {
               <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
                 <PenTool className="text-white w-4 h-4" />
               </div>
-              <span className="font-bold text-lg tracking-tight">AI Writing Assistant</span>
+              <span className="font-bold text-lg tracking-tight">Writing Buddy</span>
             </Link>
             <p className="text-text-secondary text-sm leading-relaxed mb-6">
               Improve grammar, rewrite sentences, and enhance writing instantly using AI.
@@ -58,7 +58,7 @@ export const Footer = () => {
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-text-muted text-xs">
-            © {new Date().getFullYear()} AI Writing Assistant. All rights reserved.
+            © {new Date().getFullYear()} Writing Buddy. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
              <span className="text-text-muted text-xs flex items-center gap-1.5">

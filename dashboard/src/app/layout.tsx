@@ -6,18 +6,18 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
 export const metadata: Metadata = {
-  title: 'AI Writing Assistant | Improve and Rewrite Text Anywhere',
-  description: 'The ultimate AI writing assistant for the entire web. Improve grammar, rewrite sentences in different tones, and save time on Gmail, LinkedIn, and more.',
-  keywords: ['AI writing assistant', 'grammar checker', 'rephrase tool', 'sentence improver', 'AI writer extension'],
+  title: 'Writing Buddy | Improve and Rewrite Text Anywhere',
+  description: 'The ultimate writing buddy for the entire web. Improve grammar, rewrite sentences in different tones, and save time on Gmail, LinkedIn, and more.',
+  keywords: ['Writing Buddy', 'grammar checker', 'rephrase tool', 'sentence improver', 'AI writer extension'],
   openGraph: {
-    title: 'AI Writing Assistant | Rewrite Text Anywhere',
+    title: 'Writing Buddy | Rewrite Text Anywhere',
     description: 'Improve grammar and rewrite sentences instantly using AI on any website.',
     type: 'website',
     images: [{ url: '/og-image.png' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Writing Assistant',
+    title: 'Writing Buddy',
     description: 'Rewrite text instantly with AI across the entire web.',
   },
 }

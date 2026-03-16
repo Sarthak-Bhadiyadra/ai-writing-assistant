@@ -12,7 +12,7 @@ export default function AboutPage() {
           <div>
             <h1 className="text-4xl md:text-6xl font-bold mb-8">Our <span className="text-gradient">Mission</span></h1>
             <p className="text-lg text-text-secondary leading-relaxed mb-6">
-              AI Writing Assistant was born from a simple observation: professional writing is hard, and most of it happens in browser tabs where existing tools don't reach.
+              Writing Buddy was born from a simple observation: professional writing is hard, and most of it happens in browser tabs where existing tools don't reach.
             </p>
             <p className="text-lg text-text-secondary leading-relaxed">
               Our mission is to empower professionals to write better and faster with AI, making communication seamless regardless of the platform. We believe everyone deserves a world-class editor by their side.
@@ -74,7 +74,7 @@ export default function AboutPage() {
                   <h3 className="text-2xl font-bold mb-2">Sarthak Bhadiyadra</h3>
                   <p className="text-brand-400 font-medium mb-4 uppercase tracking-widest text-xs">Founder & Lead Developer</p>
                   <p className="text-text-secondary leading-relaxed">
-                    Sarthak founded AI Writing Assistant to bridge the gap between powerful AI capabilities and the everyday tools professionals use. With a passion for clean code and intuitive design, he leads the vision of making writing effortless for everyone.
+                    Sarthak founded Writing Buddy to bridge the gap between powerful AI capabilities and the everyday tools professionals use. With a passion for clean code and intuitive design, he leads the vision of making writing effortless for everyone.
                   </p>
                </div>
             </div>
