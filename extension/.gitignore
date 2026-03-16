@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+*.zip
+
+# Environment
+.env
+.env.local
+
+# TypeScript
+*.tsbuildinfo

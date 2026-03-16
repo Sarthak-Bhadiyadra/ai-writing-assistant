@@ -1,0 +1,434 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI Writer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --surface: #0f1117;
+            --surface-raised: #161923;
+            --surface-overlay: #1c1f2e;
+            --border: #262a3a;
+            --border-light: #2e3348;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --brand-400: #818cf8;
+            --brand-500: #6366f1;
+            --brand-600: #4f46e5;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            width: 340px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--surface);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--brand-600);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .status-badge.online {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .status-dot.online { background: var(--success); }
+        .status-dot.offline { background: var(--danger); }
+
+        /* Cards */
+        .card {
+            background: var(--surface-raised);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Usage Section */
+        .usage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .usage-count {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .usage-limit {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--surface-overlay);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand-500), var(--brand-400));
+            border-radius: 100px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .usage-note {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Recent Items */
+        .recent-item {
+            background: var(--surface-overlay);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+            cursor: default;
+        }
+
+        .recent-item:last-child { margin-bottom: 0; }
+
+        .recent-item:hover {
+            border-color: var(--border);
+            color: var(--text-primary);
+        }
+
+        /* Plan Row */
+        .plan-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .plan-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: capitalize;
+        }
+
+        .plan-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: var(--brand-400);
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Login CTA */
+        .login-cta {
+            text-align: center;
+            padding: 24px 16px;
+        }
+
+        .login-cta p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 11px 20px;
+            background: var(--brand-600);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-500);
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .footer-link {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--brand-400);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .footer-link:hover {
+            color: var(--brand-500);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                        <path d="M2 2l7.586 7.586"></path>
+                        <circle cx="11" cy="11" r="2"></circle>
+                    </svg>
+                </div>
+                <span class="logo-text">AI Writer</span>
+            </div>
+            <div class="status-badge online" id="status-badge">
+                <span class="status-dot online" id="status-dot"></span>
+                <span id="status-text">Active</span>
+            </div>
+        </div>
+
+        <!-- Logged In State -->
+        <div id="logged-in-view">
+            <span class="card-label">Today's Usage</span>
+            <div class="card">
+                <div class="usage-header">
+                    <span class="usage-count" id="usage-count">&mdash;</span>
+                    <span class="usage-limit" id="usage-limit">loading...</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="usage-note" id="usage-note">Loading usage data...</div>
+            </div>
+
+            <span class="card-label">Your Plan</span>
+            <div class="card">
+                <div class="plan-row">
+                    <span class="plan-name" id="plan-name">&mdash;</span>
+                    <span class="plan-badge">Active</span>
+                </div>
+            </div>
+
+            <span class="card-label">How to Use</span>
+            <div class="card" style="padding: 12px 14px;">
+                <div class="recent-item" style="background: transparent; padding: 4px 0; margin-bottom: 4px;">1. Select any text on a webpage</div>
+                <div class="recent-item" style="background: transparent; padding: 4px 0; margin-bottom: 4px;">2. Click the purple pen icon that appears</div>
+                <div class="recent-item" style="background: transparent; padding: 4px 0; margin-bottom: 0;">3. Choose a tone and click "Improve"</div>
+            </div>
+        </div>
+
+        <!-- Logged Out State -->
+        <div id="logged-out-view" style="display:none;">
+            <div class="login-cta">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px;">
+                    <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                    <path d="M2 2l7.586 7.586"></path>
+                    <circle cx="11" cy="11" r="2"></circle>
+                </svg>
+                <p>Sign in to the AI Writer Dashboard to start improving your writing.</p>
+                <a href="http://localhost:3000/login" target="_blank" class="btn-primary">
+                    Open Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span class="footer-text" id="version-text">v1.0.0</span>
+            <a href="http://localhost:3000" target="_blank" class="footer-link">Dashboard &rarr;</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadPopupData() {
+            console.log('AI Writer: Loading popup data...');
+            try {
+                const data = await chrome.storage.local.get(['supabase_token']);
+                const token = data.supabase_token;
+                console.log('AI Writer: Token found:', !!token);
+
+                if (!token || token === 'undefined' || token === 'null') {
+                    console.log('AI Writer: No valid token, showing logged-out view');
+                    document.getElementById('logged-in-view').style.display = 'none';
+                    document.getElementById('logged-out-view').style.display = 'block';
+                    document.getElementById('status-badge').className = 'status-badge offline';
+                    document.getElementById('status-dot').className = 'status-dot offline';
+                    document.getElementById('status-text').textContent = 'Offline';
+                    return;
+                }
+
+                // Logged in — fetch usage data from backend
+                try {
+                    console.log('AI Writer: Fetching usage from http://127.0.0.1:5000/usage...');
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch('http://127.0.0.1:5000/usage', {
+                        headers: { 'Authorization': 'Bearer ' + token },
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    console.log('AI Writer: Fetch response status:', response.status);
+
+                    if (response.ok) {
+                        const usage = await response.json();
+                        console.log('AI Writer: Usage data received:', usage);
+                        
+                        const count = usage.count || 0;
+                        const limit = usage.limit || 30;
+                        const plan = usage.plan || 'free';
+                        const percentage = limit === -1 ? 0 : Math.min((count / limit) * 100, 100);
+
+                        document.getElementById('usage-count').textContent = String(count);
+                        document.getElementById('usage-limit').textContent = limit === -1 ? '/ unlimited' : `/ ${limit} improvements`;
+                        document.getElementById('plan-name').textContent = plan;
+
+                        const progressFill = document.getElementById('progress-fill');
+                        progressFill.style.width = (limit === -1 ? 0 : percentage) + '%';
+                        if (percentage > 80) progressFill.classList.add('warning');
+
+                        document.getElementById('usage-note').textContent = 
+                            limit === -1 
+                                ? 'Unlimited improvements available'
+                                : `${Math.max(0, (100 - percentage)).toFixed(0)}% of daily limit remaining`;
+                    } else {
+                        console.warn('AI Writer: Fetch failed with status:', response.status);
+                        document.getElementById('usage-count').textContent = '-';
+                        document.getElementById('usage-limit').textContent = 'Not synced';
+                        document.getElementById('usage-note').textContent = 'Open Dashboard and refresh';
+                        document.getElementById('plan-name').textContent = 'Connected';
+                    }
+                } catch (fetchErr) {
+                    console.error('AI Writer: Fetch error:', fetchErr);
+                    document.getElementById('usage-count').textContent = '-';
+                    document.getElementById('usage-limit').textContent = 'Offline';
+                    document.getElementById('usage-note').textContent = 'Backend server not responding';
+                    document.getElementById('plan-name').textContent = 'Error';
+                }
+
+            } catch (err) {
+                console.error('AI Writer: Popup script error:', err);
+            }
+        }
+
+        loadPopupData();
+    </script>
+</body>
+</html>

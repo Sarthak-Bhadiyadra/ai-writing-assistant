@@ -1,0 +1,28 @@
+/* AI Writer — Content Script Styles */
+
+/* Floating button base styles are set inline in content.ts */
+/* These provide hover/active states that can't be done inline */
+
+#ai-writing-assistant-btn {
+    -webkit-font-smoothing: antialiased;
+}
+
+#ai-writing-assistant-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(79, 70, 229, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.4) !important;
+}
+
+#ai-writing-assistant-btn:active {
+    transform: scale(0.95);
+}
+
+/* Ensure overlay is above everything */
+#ai-writing-assistant-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2147483646;
+    pointer-events: auto;
+}
