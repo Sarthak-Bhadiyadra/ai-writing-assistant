@@ -17,11 +17,17 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   const { data: { user }, error } = await supabase.auth.getUser(token);
 
   if (error || !user) {
+    const isExpired = error?.message?.includes('token is expired') || error?.status === 403;
+    
     logger.error('Auth Error:', error?.message || 'No user found', { 
       error,
       tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
     });
-    return res.status(401).json({ error: 'Invalid token' });
+
+    return res.status(401).json({ 
+      error: isExpired ? 'Token expired' : 'Invalid token',
+      code: isExpired ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN'
+    });
   }
 
   req.user = user;

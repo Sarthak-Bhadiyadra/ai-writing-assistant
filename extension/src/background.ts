@@ -156,7 +156,10 @@ async function handleImprovementRequest(request: any, sendResponse: (response: a
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            sendResponse({ error: errData.error || `Server error (${response.status})` });
+            sendResponse({ 
+                error: errData.error || `Server error (${response.status})`,
+                code: errData.code
+            });
             return;
         }
 

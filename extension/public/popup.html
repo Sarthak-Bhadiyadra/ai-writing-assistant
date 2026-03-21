@@ -408,13 +408,21 @@
                             limit === -1 
                                 ? 'Unlimited improvements available'
                                 : `${Math.max(0, (100 - percentage)).toFixed(0)}% of daily limit remaining`;
-                    } else {
-                        console.warn('AI Writer: Fetch failed with status:', response.status);
-                        document.getElementById('usage-count').textContent = '-';
-                        document.getElementById('usage-limit').textContent = 'Not synced';
-                        document.getElementById('usage-note').textContent = 'Open Dashboard and refresh';
-                        document.getElementById('plan-name').textContent = 'Connected';
                     }
+                    if (response.status === 401) {
+                        console.log('AI Writer: Session expired (401), showing logged-out view');
+                        document.getElementById('logged-in-view').style.display = 'none';
+                        document.getElementById('logged-out-view').style.display = 'block';
+                        document.getElementById('status-badge').className = 'status-badge offline';
+                        document.getElementById('status-dot').className = 'status-dot offline';
+                        document.getElementById('status-text').textContent = 'Offline';
+                        return;
+                    }
+                    console.warn('AI Writer: Fetch failed with status:', response.status);
+                    document.getElementById('usage-count').textContent = '-';
+                    document.getElementById('usage-limit').textContent = 'Not synced';
+                    document.getElementById('usage-note').textContent = 'Open Dashboard and refresh';
+                    document.getElementById('plan-name').textContent = 'Connected';
                 } catch (fetchErr) {
                     console.error('AI Writer: Fetch error:', fetchErr);
                     document.getElementById('usage-count').textContent = '-';

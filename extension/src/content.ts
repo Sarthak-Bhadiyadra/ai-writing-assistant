@@ -523,6 +523,17 @@ function showUIOverlay(text: string) {
                 line-height: 1.5;
             }
 
+            .error-msg a {
+                color: #818cf8;
+                text-decoration: underline;
+                font-weight: 600;
+                margin-left: 4px;
+                cursor: pointer;
+            }
+            .error-msg a:hover {
+                color: #6366f1;
+            }
+
             .loading-container {
                 text-align: center;
                 padding: 16px 0;
@@ -668,10 +679,15 @@ function showUIOverlay(text: string) {
     const errorMsg = root.getElementById('error-msg') as HTMLDivElement;
     const wordDiffEl = root.getElementById('word-diff') as HTMLSpanElement;
 
-    function showError(msg: string) {
-        errorMsg.textContent = msg;
+    function showError(msg: string, isExpired = false) {
+        if (isExpired) {
+            errorMsg.innerHTML = `Session expired. Please <a href="http://localhost:3000/login" target="_blank">Sign in to Dashboard</a> to continue.`;
+        } else {
+            errorMsg.textContent = msg;
+        }
         errorArea.style.display = 'block';
-        setTimeout(() => { errorArea.style.display = 'none'; }, 8000);
+        // Keep error visible longer for expired tokens
+        setTimeout(() => { errorArea.style.display = 'none'; }, isExpired ? 15000 : 8000);
     }
 
     improveBtn.onclick = async () => {
@@ -708,7 +724,7 @@ function showUIOverlay(text: string) {
                 }
 
                 if (response?.error) {
-                    showError(response.error);
+                    showError(response.error, response.code === 'TOKEN_EXPIRED');
                 } else if (response?.result) {
                     aiResult.value = response.result;
                     resultArea.style.display = 'block';
