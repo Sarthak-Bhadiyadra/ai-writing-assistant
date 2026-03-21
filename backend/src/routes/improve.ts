@@ -12,7 +12,7 @@ const groq = new OpenAI({
 });
 
 router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
-  const { text, tone } = req.body;
+  const { text, tone, url, source } = req.body;
   const userId = req.user.id;
 
   if (!text || text.length > 1000) {
@@ -71,7 +71,11 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     await supabase.from('usage_logs').insert({
       user_id: userId,
       text_length: text.length,
-      tone: tone
+      tone: tone,
+      url: url,
+      source: source,
+      input_text: text,
+      improved_text: result
     });
 
     res.json({ result });

@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener((request) => {
     if (request.action === 'show_ui') {
         showUIOverlay(request.text);
     } else if (request.action === 'token_synced' && window.location.host.includes('localhost:3000')) {
-        showToast(`✅ AI Writer: Token synced (${request.name})`);
+        // showToast(`✅ AI Writer: Token synced (${request.name})`);
     } else if (request.action === 'get_dashboard_token') {
         // Background script is asking for the token
         syncDashboardToken();

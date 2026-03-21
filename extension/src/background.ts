@@ -117,7 +117,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
     } else if (request.action === 'improve_text') {
         // Handle improvement request in background for reliability and CORS
-        handleImprovementRequest(request, sendResponse);
+        handleImprovementRequest({ ...request, sourceUrl: sender.url }, sendResponse);
         return true; // Keep channel open for async response
     }
 });
@@ -150,7 +150,9 @@ async function handleImprovementRequest(request: any, sendResponse: (response: a
             },
             body: JSON.stringify({
                 text: request.text,
-                tone: request.tone
+                tone: request.tone,
+                url: request.sourceUrl,
+                source: extractDomain(request.sourceUrl)
             })
         });
 
@@ -206,6 +208,15 @@ function extractToken(value: string): string | null {
         // If decryption/parsing fails, check if it's a JWT
         if (value.split('.').length === 3) return value;
         return null;
+    }
+}
+function extractDomain(url: string | undefined): string {
+    if (!url) return 'Extension';
+    try {
+        const u = new URL(url);
+        return u.hostname.replace('www.', '');
+    } catch {
+        return 'Webpage';
     }
 }
 

@@ -12,7 +12,11 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     text_length INTEGER NOT NULL,
-    tone TEXT NOT NULL
+    tone TEXT NOT NULL,
+    url TEXT,
+    source TEXT,
+    input_text TEXT,
+    improved_text TEXT
 );
 
 -- Subscriptions table (mirrors Stripe state)
@@ -33,6 +37,7 @@ ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 -- Basic RLS Policies
 CREATE POLICY "Users can view their own data" ON users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can view their own usage" ON usage_logs FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own usage" ON usage_logs FOR DELETE USING (auth.uid() = user_id);
 CREATE POLICY "Users can view their own subscriptions" ON subscriptions FOR SELECT USING (auth.uid() = user_id);
 
 -- Function to handle new user registration automatically

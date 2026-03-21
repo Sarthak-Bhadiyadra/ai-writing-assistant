@@ -10,7 +10,8 @@ import {
   BarChart3, 
   PenTool,
   User,
-  Zap
+  Zap,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
@@ -77,8 +78,8 @@ export default function DashboardLayout({
           <SidebarLink href="/app" icon={LayoutDashboard} active={pathname === "/app"}>
             Dashboard
           </SidebarLink>
-          <SidebarLink href="/app/statistics" icon={BarChart3} active={pathname === "/app/statistics"}>
-            Usage Stats
+          <SidebarLink href="/app/activity" icon={Clock} active={pathname === "/app/activity"}>
+            Recent Activity
           </SidebarLink>
           <SidebarLink href="/app/billing" icon={CreditCard} active={pathname === "/app/billing"}>
             Billing & Plans
