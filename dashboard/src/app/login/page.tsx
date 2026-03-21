@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { handleError, handleSuccess } from '@/lib/errorHandler'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Sparkles, ArrowRight, Github, Chrome } from 'lucide-react'
@@ -27,9 +28,11 @@ export default function LoginPage() {
     })
 
     if (error) {
+      handleError(error, "Login failed");
       setError(error.message)
       setLoading(false)
     } else {
+      handleSuccess("Welcome back!");
       router.push('/app')
       router.refresh()
     }

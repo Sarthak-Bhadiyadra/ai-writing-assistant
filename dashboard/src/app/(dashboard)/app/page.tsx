@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { handleError } from "@/lib/errorHandler";
 import { TrendingUp, Sparkles, Zap, PenTool, ArrowUpRight, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -36,27 +37,34 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function getDashboardData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      
-      setDbUser(userData);
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        
+        if (userError) throw userError;
+        setDbUser(userData);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const { count } = await supabase
-        .from("usage_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("timestamp", today.toISOString());
-      
-      setUsage(count || 0);
-      setLoading(false);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const { count, error: usageError } = await supabase
+          .from("usage_logs")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("timestamp", today.toISOString());
+        
+        if (usageError) throw usageError;
+        setUsage(count || 0);
+      } catch (error) {
+        handleError(error, "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
     }
 
     getDashboardData();

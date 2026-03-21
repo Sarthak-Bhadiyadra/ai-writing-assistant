@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import Stripe from 'stripe';
-import { supabase } from '../index';
+import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 const router = Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -17,7 +18,9 @@ router.post('/', async (req: Request, res: Response) => {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
+    logger.info('Stripe Webhook received:', event.type);
   } catch (err: any) {
+    logger.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -33,7 +36,7 @@ router.post('/', async (req: Request, res: Response) => {
       await handleSubscriptionChange(deletedSub, 'canceled');
       break;
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      logger.info(`Unhandled event type ${event.type}`);
   }
 
   res.json({ received: true });

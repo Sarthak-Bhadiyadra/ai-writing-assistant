@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { Toaster } from 'sonner'
+
 export default function RootLayout({
   children,
 }: {
@@ -30,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="font-sans antialiased text-text-primary bg-surface min-h-screen">
+        <Toaster richColors position="top-right" />
         {children}
       </body>
     </html>

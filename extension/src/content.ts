@@ -23,8 +23,89 @@ chrome.runtime.onMessage.addListener((request) => {
         showUIOverlay(request.text);
     } else if (request.action === 'token_synced' && window.location.host.includes('localhost:3000')) {
         showToast(`✅ AI Writer: Token synced (${request.name})`);
+    } else if (request.action === 'get_dashboard_token') {
+        // Background script is asking for the token
+        syncDashboardToken();
     }
 });
+
+// ─── Token Synchronization ───
+const DASHBOARD_SUPABASE_REF = 'srxmxrpfplhylngzirfm';
+
+function syncDashboardToken() {
+    // Only run on the dashboard domain
+    if (!window.location.host.includes('localhost:3000')) return;
+
+    console.log('AI Writer: Attempting to sync token from Dashboard storage...');
+    
+    try {
+        // Try multiple potential keys for Supabase auth
+        const keys = [
+            `sb-${DASHBOARD_SUPABASE_REF}-auth-token`,
+            'supabase.auth.token',
+            `sb-auth-token`
+        ];
+
+        let sessionStr = null;
+        for (const key of keys) {
+            sessionStr = localStorage.getItem(key);
+            if (sessionStr) break;
+        }
+
+        if (sessionStr) {
+            const token = parseSupabaseSession(sessionStr);
+            
+            if (token) {
+                chrome.runtime.sendMessage({ 
+                    action: 'store_token', 
+                    token: token,
+                    source: 'dashboard_storage'
+                });
+                console.log('AI Writer: Token found and sent to background script');
+            }
+        }
+    } catch (e) {
+        console.error('AI Writer: Error syncing token:', e);
+    }
+}
+
+function parseSupabaseSession(sessionStr: string) {
+    if (!sessionStr) return null;
+    try {
+        let jsonStr = sessionStr;
+        // Handle Supabase's base64- prefix used in some versions
+        if (sessionStr.startsWith('base64-')) {
+            jsonStr = safeAtob(sessionStr.substring(7));
+        }
+        
+        const session = JSON.parse(jsonStr);
+        return session.access_token || 
+               (Array.isArray(session) && session[0]?.access_token) || 
+               null;
+    } catch (e) {
+        // If it's already a JWT, it will fail JSON.parse
+        if (sessionStr.split('.').length === 3) return sessionStr;
+        return null;
+    }
+}
+
+function safeAtob(str: string): string {
+    try {
+        let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        return atob(base64);
+    } catch (e) {
+        return atob(str);
+    }
+}
+
+// Auto-sync when page loads
+if (window.location.host.includes('localhost:3000')) {
+    // Small delay to ensure localStorage is populated
+    setTimeout(syncDashboardToken, 1000);
+}
 
 // ─── Toast Notification ───
 function showToast(message: string) {
@@ -600,66 +681,63 @@ function showUIOverlay(text: string) {
             return;
         }
 
+        // Check if context is valid
+        if (!chrome.runtime?.id) {
+            showError('Extension context invalidated. Please refresh the page to continue.');
+            return;
+        }
+
         improveBtn.disabled = true;
         loadingEl.style.display = 'block';
         resultArea.style.display = 'none';
         errorArea.style.display = 'none';
 
         try {
-            const data = await chrome.storage.local.get('supabase_token');
-            const supabase_token = data.supabase_token as string;
-            
-            if (!supabase_token || supabase_token === 'undefined' || supabase_token === 'null') {
-                console.error('AI Writer: Token missing.', await chrome.storage.local.get());
-                showError('Not logged in. Please visit the AI Writer Dashboard (localhost:3000) and sign in, then refresh this page.');
+            // Send message to background script to perform the API call
+            chrome.runtime.sendMessage({
+                action: 'improve_text',
+                text: inputText,
+                tone: (root.getElementById('tone-selector') as HTMLSelectElement).value
+            }, (response) => {
+                // If the context was invalidated while waiting
+                if (chrome.runtime.lastError) {
+                    showError('Connection lost. Please refresh the page.');
+                    improveBtn.disabled = false;
+                    loadingEl.style.display = 'none';
+                    return;
+                }
+
+                if (response?.error) {
+                    showError(response.error);
+                } else if (response?.result) {
+                    aiResult.value = response.result;
+                    resultArea.style.display = 'block';
+
+                    // Word diff indicator
+                    const origWords = inputText.split(/\s+/).filter(Boolean).length;
+                    const newWords = response.result.split(/\s+/).filter(Boolean).length;
+                    const diff = newWords - origWords;
+                    
+                    if (diff < 0) {
+                        wordDiffEl.textContent = `${diff} words`;
+                        wordDiffEl.className = 'word-diff shorter';
+                    } else if (diff > 0) {
+                        wordDiffEl.textContent = `+${diff} words`;
+                        wordDiffEl.className = 'word-diff longer';
+                    } else {
+                        wordDiffEl.textContent = 'Same length';
+                        wordDiffEl.className = 'word-diff same';
+                    }
+                } else {
+                    showError('Received no response from AI. Please try again.');
+                }
+
                 improveBtn.disabled = false;
                 loadingEl.style.display = 'none';
-                return;
-            }
-
-            const response = await fetch(`${process.env.BACKEND_URL}/improve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + supabase_token
-                },
-                body: JSON.stringify({
-                    text: inputText,
-                    tone: (root.getElementById('tone-selector') as HTMLSelectElement).value
-                })
             });
-
-            if (!response.ok) {
-                const errData = await response.json().catch(() => null);
-                throw new Error(errData?.error || `Server error (${response.status})`);
-            }
-
-            const resultData = await response.json();
-            if (resultData.result) {
-                aiResult.value = resultData.result;
-                resultArea.style.display = 'block';
-
-                // Word diff indicator
-                const origWords = inputText.split(/\s+/).filter(Boolean).length;
-                const newWords = resultData.result.split(/\s+/).filter(Boolean).length;
-                const diff = newWords - origWords;
-                if (diff < 0) {
-                    wordDiffEl.textContent = `${diff} words`;
-                    wordDiffEl.className = 'word-diff shorter';
-                } else if (diff > 0) {
-                    wordDiffEl.textContent = `+${diff} words`;
-                    wordDiffEl.className = 'word-diff longer';
-                } else {
-                    wordDiffEl.textContent = 'Same length';
-                    wordDiffEl.className = 'word-diff same';
-                }
-            } else {
-                showError(resultData.error || 'Could not improve text. Please try again.');
-            }
         } catch (e) {
             console.error('AI Writer Error:', e);
-            showError(e instanceof Error ? e.message : 'Failed to connect. Check your internet and try again.');
-        } finally {
+            showError('Failed to communicate with extension. Please refresh.');
             improveBtn.disabled = false;
             loadingEl.style.display = 'none';
         }

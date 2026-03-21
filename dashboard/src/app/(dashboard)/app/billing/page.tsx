@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { handleError } from "@/lib/errorHandler";
 import { Check, Zap, CreditCard, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModernButton } from "@/components/ui/ModernButton";
@@ -13,17 +14,23 @@ export default function BillingPage() {
 
   useEffect(() => {
     async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      
-      setDbUser(userData);
-      setLoading(false);
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        
+        if (userError) throw userError;
+        setDbUser(userData);
+      } catch (error) {
+        handleError(error, "Failed to load billing data");
+      } finally {
+        setLoading(false);
+      }
     }
     getUser();
   }, []);

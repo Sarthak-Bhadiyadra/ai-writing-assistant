@@ -1,11 +1,12 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 const router = Router();
 
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
-  console.log('GET /usage - Request from user:', req.user?.id);
+  logger.info('GET /usage - Request from user:', req.user?.id);
   try {
     const userId = req.user.id;
 
@@ -40,7 +41,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       plan,
     });
   } catch (error) {
-    console.error('Usage endpoint error:', error);
+    logger.error('Usage endpoint error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

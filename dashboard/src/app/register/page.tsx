@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { handleError, handleSuccess } from '@/lib/errorHandler'
 import Link from 'next/link'
 import { Sparkles, CheckCircle, ArrowRight, Github } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -29,9 +30,11 @@ export default function RegisterPage() {
     })
 
     if (error) {
+      handleError(error, "Registration failed");
       setError(error.message)
       setLoading(false)
     } else {
+      handleSuccess("Verification email sent!");
       setSuccess(true)
       setLoading(false)
     }

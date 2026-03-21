@@ -11,57 +11,38 @@ async function syncTokenFromCookies() {
         let foundToken = null;
         let tokenName = "";
 
-        // Strategy 1: Look for specific Project Ref cookies
+        // Strategy 1: Look for specific Project Ref cookies (handle splitting)
         const targetPrefix = `sb-${SUPABASE_REF}-auth-token`;
-        const primaryCookie = allLocalCookies.find(c => c.name === targetPrefix || c.name === `${targetPrefix}.0`);
+        const projectCookies = allLocalCookies
+            .filter(c => c.name.startsWith(targetPrefix))
+            .sort((a, b) => {
+                const aIdx = parseInt(a.name.split('.').pop() || '0');
+                const bIdx = parseInt(b.name.split('.').pop() || '0');
+                if (isNaN(aIdx)) return -1;
+                if (isNaN(bIdx)) return 1;
+                return aIdx - bIdx;
+            });
         
-        if (primaryCookie) {
-            tokenName = primaryCookie.name;
-            console.log('Found cookie:', primaryCookie.name, 'Raw value length:', primaryCookie.value.length);
+        if (projectCookies.length > 0) {
+            tokenName = projectCookies[0].name + (projectCookies.length > 1 ? '+' : '');
+            console.log('Found', projectCookies.length, 'parts for', targetPrefix);
             
-            // FIXED: Supabase cookies are base64(session) - extract the access_token
             try {
-                const decodedValue = decodeURIComponent(primaryCookie.value);
-                console.log('Decoded cookie value preview:', decodedValue.substring(0, 100) + '...');
-                
-                // Supabase cookie format: base64(session_object)
-                const sessionMatch = decodedValue.match(/^base64-(.*)$/);
-                if (sessionMatch) {
-                    const sessionB64 = sessionMatch[1];
-                    const sessionJson = JSON.parse(atob(sessionB64));
-                    console.log('Parsed session structure:', Object.keys(sessionJson));
-                    
-                    // Extract access_token from session
-                    foundToken = sessionJson.access_token || 
-                                (sessionJson[0] && sessionJson[0].access_token) || 
-                                null;
-                } else {
-                    // Fallback for direct token
-                    foundToken = decodedValue;
-                }
+                // Stitch cookies together
+                const rawValue = projectCookies.map(c => c.value).join('');
+                const decodedValue = decodeURIComponent(rawValue);
+                foundToken = extractToken(decodedValue);
             } catch (e) {
-                console.log('Parse error, using raw decoded value:', e);
-                foundToken = decodeURIComponent(primaryCookie.value);
+                console.log('Stitch/Parse error:', e);
             }
         }
 
         // Strategy 2: Fallback to ANY Supabase auth token
         if (!foundToken) {
-            const fallbackCookie = allLocalCookies.find(c => c.name.includes('auth-token'));
+            const fallbackCookie = allLocalCookies.find(c => c.name.includes('auth-token') && !c.name.startsWith(targetPrefix));
             if (fallbackCookie) {
                 tokenName = fallbackCookie.name;
-                try {
-                    const decoded = decodeURIComponent(fallbackCookie.value);
-                    const sessionMatch = decoded.match(/^base64-(.*)$/);
-                    if (sessionMatch) {
-                        const sessionJson = JSON.parse(atob(sessionMatch[1]));
-                        foundToken = sessionJson.access_token || sessionJson[0]?.access_token;
-                    } else {
-                        foundToken = decoded;
-                    }
-                } catch (e) {
-                    foundToken = decodeURIComponent(fallbackCookie.value);
-                }
+                foundToken = extractToken(decodeURIComponent(fallbackCookie.value));
             }
         }
 
@@ -85,9 +66,6 @@ async function syncTokenFromCookies() {
             }
         } else {
             console.warn('❌ No valid access_token found in', allLocalCookies.length, 'cookies');
-            // Log all auth-token cookies for debugging
-            const authCookies = allLocalCookies.filter(c => c.name.includes('auth-token'));
-            console.log('All auth cookies:', authCookies.map(c => ({name: c.name, length: c.value.length})));
         }
     } catch (error) {
         console.error('Sync error:', error);
@@ -133,5 +111,113 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 chrome.tabs.sendMessage(sender.tab.id, { action: 'show_ui', text: request.text });
             }
         });
+    } else if (request.action === 'store_token' && request.token) {
+        chrome.storage.local.set({ supabase_token: request.token }, () => {
+            console.log('✅ Token synced from content script (source:', request.source || 'unknown', ')');
+        });
+    } else if (request.action === 'improve_text') {
+        // Handle improvement request in background for reliability and CORS
+        handleImprovementRequest(request, sendResponse);
+        return true; // Keep channel open for async response
     }
 });
+
+async function handleImprovementRequest(request: any, sendResponse: (response: any) => void) {
+    try {
+        const data = await chrome.storage.local.get('supabase_token');
+        const rawToken = data.supabase_token as string;
+        console.log("BG: rawToken from storage:", rawToken ? (rawToken.substring(0, 20) + '...') : 'undefined');
+        const token = extractToken(rawToken);
+
+        if (!token) {
+            console.error('BG: No token found or token invalid after extraction (raw length:', rawToken?.length || 0, ')');
+            sendResponse({ error: 'Not logged in. Please sign in to the Dashboard.' });
+            return;
+        }
+
+        console.log('BG: Sending request with token preview:', token.substring(0, 20) + '...');
+
+        // Use the backend URL from environment or hardcode for dev
+        const BACKEND_URL = 'http://localhost:5000'; 
+        
+        console.log('BG: Improvement request for tone:', request.tone);
+
+        const response = await fetch(`${BACKEND_URL}/improve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                text: request.text,
+                tone: request.tone
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            sendResponse({ error: errData.error || `Server error (${response.status})` });
+            return;
+        }
+
+        const result = await response.json();
+        sendResponse({ result: result.result });
+    } catch (error) {
+        console.error('BG: Improvement error:', error);
+        sendResponse({ error: error instanceof Error ? error.message : 'Connection failed' });
+    }
+}
+
+function extractToken(value: string): string | null {
+    if (!value) return null;
+    if (typeof value !== 'string') return null;
+    
+    try {
+        let jsonStr = value;
+        // Handle Supabase's base64- prefix used in some versions
+        if (value.startsWith('base64-')) {
+            jsonStr = safeAtob(value.substring(7));
+        }
+        
+        // If it's a JSON string (session object)
+        if (jsonStr.trim().startsWith('{') || jsonStr.trim().startsWith('[')) {
+            const session = JSON.parse(jsonStr);
+            // Dig deep for the token
+            const token = session.access_token || 
+                         (Array.isArray(session) && session[0]?.access_token) ||
+                         (session.session && session.session.access_token);
+            
+            if (token) return token;
+        }
+        
+        // If it's the raw value but still looks like a JWT
+        const parts = jsonStr.split('.');
+        if (parts.length === 3) return jsonStr;
+        
+        // Final fallback: maybe it's the raw value from the cookie
+        if (value.split('.').length === 3) return value;
+
+        return null;
+    } catch (e) {
+        console.error('BG: extractToken error:', e);
+        // If decryption/parsing fails, check if it's a JWT
+        if (value.split('.').length === 3) return value;
+        return null;
+    }
+}
+
+function safeAtob(str: string): string {
+    try {
+        // Handle base64url (Supabase standard)
+        // 1. Replace URL-safe characters
+        let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        // 2. Add padding
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        return atob(base64);
+    } catch (e) {
+        // Fallback to regular atob
+        return atob(str);
+    }
+}

@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import OpenAI from 'openai';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { supabase } from '../index';
+import { logger } from '../lib/logger';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    console.log("userId", userId, req.user)
+    logger.info("Improving text for user:", userId, { tone, textLength: text.length });
     // 1. Check usage limit
     const { data: userData, error: userError } = await supabase
       .from('users')
@@ -76,7 +77,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     res.json({ result });
 
   } catch (error: any) {
-    console.error('AI Error:', error);
+    logger.error('AI Error:', error);
     res.status(500).json({ error: 'Failed to improve text' });
   }
 });
