@@ -6,11 +6,44 @@ import { handleError } from "@/lib/errorHandler";
 import { Check, Zap, CreditCard, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModernButton } from "@/components/ui/ModernButton";
+import { toast } from "sonner";
 
 export default function BillingPage() {
   const [dbUser, setDbUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState(false);
   const supabase = createClient();
+
+  const handleUpgrade = async () => {
+    try {
+      setUpgrading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please sign in to upgrade");
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/checkout/create-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+    } catch (error: any) {
+      handleError(error, "Upgrade failed");
+    } finally {
+      setUpgrading(false);
+    }
+  };
 
   useEffect(() => {
     async function getUser() {
@@ -57,14 +90,6 @@ export default function BillingPage() {
       features: ["Unlimited improvements", "Advanced AI models", "Everywhere on the web", "Priority Support"],
       isCurrent: dbUser?.plan === "pro",
       popular: true
-    },
-    {
-      name: "Team",
-      price: "$25",
-      period: "/month",
-      description: "For teams and agencies.",
-      features: ["Up to 5 users included", "Shared analytics", "Centralized billing", "Dedicated manager"],
-      isCurrent: dbUser?.plan === "team"
     }
   ];
 
@@ -127,9 +152,10 @@ export default function BillingPage() {
             <ModernButton 
               className="w-full" 
               variant={plan.popular ? "primary" : "secondary"}
-              disabled={plan.isCurrent}
+              disabled={plan.isCurrent || upgrading}
+              onClick={plan.name === "Pro" ? handleUpgrade : undefined}
             >
-              {plan.isCurrent ? "Current Plan" : "Upgrade"}
+              {upgrading ? "Loading..." : (plan.isCurrent ? "Current Plan" : "Upgrade")}
             </ModernButton>
           </div>
         ))}

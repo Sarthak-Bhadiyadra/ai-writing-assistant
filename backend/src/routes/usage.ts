@@ -32,7 +32,6 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const limits: Record<string, number> = {
       free: 30,
       pro: -1,    // unlimited
-      team: -1,   // unlimited
     };
 
     res.json({

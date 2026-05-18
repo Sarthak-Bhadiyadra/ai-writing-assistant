@@ -35,6 +35,10 @@ router.post('/', async (req: Request, res: Response) => {
       const deletedSub = event.data.object as Stripe.Subscription;
       await handleSubscriptionChange(deletedSub, 'canceled');
       break;
+    case 'checkout.session.completed':
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleCheckoutSessionCompleted(session);
+      break;
     default:
       logger.info(`Unhandled event type ${event.type}`);
   }
@@ -49,21 +53,65 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription, overr
   // We need to find the user by Stripe customer ID or look it up from metadata
   // Recommendation: Use metadata when creating checkout session
   const userId = subscription.metadata.userId;
+  
+  logger.info('Handling subscription change:', { userId, status, subscriptionId: subscription.id });
 
-  if (!userId) return;
+  if (!userId) {
+    logger.warn('No userId found in subscription metadata');
+    return;
+  }
 
   const plan = subscription.items.data[0].plan.nickname?.toLowerCase() || 'pro';
+  logger.info('Updating user plan to:', plan);
+
+  // Safely handle current_period_end
+  const periodEnd = (subscription as any).current_period_end 
+    ? new Date((subscription as any).current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // Default to 30 days if missing
 
   await supabase.from('subscriptions').upsert({
     id: subscription.id,
     user_id: userId,
     plan: plan,
     status: status,
-    current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+    current_period_end: periodEnd,
     updated_at: new Date().toISOString()
   });
 
   await supabase.from('users').update({ plan: plan }).eq('id', userId);
+}
+
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId;
+  const subscriptionId = session.subscription as string;
+
+  logger.info('Handling checkout session completed:', { userId, subscriptionId });
+
+  if (!userId || !subscriptionId) {
+    logger.warn('Missing userId or subscriptionId in checkout session');
+    return;
+  }
+
+  // Get subscription details to get the plan
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const plan = subscription.items.data[0].plan.nickname?.toLowerCase() || 'pro';
+
+  // Safely handle current_period_end
+  const periodEnd = (subscription as any).current_period_end 
+    ? new Date((subscription as any).current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  await supabase.from('subscriptions').upsert({
+    id: subscription.id,
+    user_id: userId,
+    plan: plan,
+    status: subscription.status,
+    current_period_end: periodEnd,
+    updated_at: new Date().toISOString()
+  });
+
+  await supabase.from('users').update({ plan: plan }).eq('id', userId);
+  logger.info('User plan updated successfully via checkout session');
 }
 
 export default router;

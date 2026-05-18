@@ -6,6 +6,7 @@ import cors from 'cors';
 import improveRouter from './routes/improve';
 import usageRouter from './routes/usage';
 import webhookRouter from './routes/webhooks';
+import checkoutRouter from './routes/checkout';
 
 import { logger } from './lib/logger';
 
@@ -36,6 +37,7 @@ app.get('/health', (req, res) => {
 
 app.use('/improve', improveRouter);
 app.use('/usage', usageRouter);
+app.use('/checkout', checkoutRouter);
 
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);

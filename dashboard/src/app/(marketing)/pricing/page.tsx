@@ -85,20 +85,6 @@ export default function PricingPage() {
           buttonText="Upgrade to Pro"
           delay={0.2}
         />
-        <PricingCard 
-          name="Team"
-          price="$25"
-          description="For small teams and agencies."
-          features={[
-            "Up to 5 users included",
-            "Shared workspace",
-            "Centralized billing",
-            "Team usage analytics",
-            "Dedicated account manager"
-          ]}
-          buttonText="Contact Sales"
-          delay={0.3}
-        />
       </div>
 
       <div className="mt-32 glass-card p-12 text-center max-w-4xl mx-auto">
