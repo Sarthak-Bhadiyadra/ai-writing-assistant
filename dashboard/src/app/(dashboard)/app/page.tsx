@@ -4,31 +4,32 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { handleError } from "@/lib/errorHandler";
-import { TrendingUp, Sparkles, Zap, PenTool, ArrowUpRight, Clock, Trash2, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { TrendingUp, Sparkles, Zap, PenTool, ArrowUpRight, Trash2, ShieldCheck, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-const StatCard = ({ label, value, subtext, icon: Icon, colorClass }: any) => (
+const StatCard = ({ label, value, subtext, icon: Icon, colorClass, delay }: any) => (
   <motion.div
-    initial={{ opacity: 0, y: 10 }}
+    initial={{ opacity: 0, y: 15 }}
     animate={{ opacity: 1, y: 0 }}
-    className="glass-card flex flex-col gap-5 border-white/5 hover:border-white/10 transition-all duration-300 group"
+    transition={{ duration: 0.5, delay }}
+    className="glass-card glass-card-hover flex flex-col justify-between h-full group relative overflow-hidden shadow-[0_15px_30px_rgba(15,23,42,0.02)] border-slate-200/50"
   >
-    <div className="flex items-center justify-between">
-      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted/60">{label}</span>
-      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300", colorClass)}>
-        <Icon size={20} />
+    <div className="absolute -top-10 -left-10 w-28 h-28 bg-brand-500/5 rounded-full blur-2xl group-hover:bg-brand-500/10 transition-colors" />
+    <div className="flex items-center justify-between mb-6">
+      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</span>
+      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-sm", colorClass)}>
+        <Icon size={18} />
       </div>
     </div>
     <div>
-      <h2 className="text-4xl font-extrabold tracking-tight">{value}</h2>
-      <p className="text-xs text-text-secondary mt-1 flex items-center gap-1">
+      <h2 className="text-3xl font-black tracking-tight text-slate-900 mb-1">{value}</h2>
+      <p className="text-xs text-slate-500 flex items-center gap-1.5 font-semibold leading-relaxed">
         {subtext}
       </p>
     </div>
   </motion.div>
 );
-
-import { cn } from "@/lib/utils";
 
 function formatRelativeTime(dateString: string) {
   const date = new Date(dateString);
@@ -55,7 +56,7 @@ export default function DashboardPage() {
       .select("*")
       .eq("user_id", userId)
       .order("timestamp", { ascending: false })
-      .limit(5);
+      .limit(4);
     
     if (error) throw error;
     setRecentActivity(data || []);
@@ -70,26 +71,8 @@ export default function DashboardPage() {
       
       if (error) throw error;
       setRecentActivity(prev => prev.filter(a => a.id !== id));
-      // Also update usage count if it's from today
-      // (Optional, maybe keep usage count as total historical attempts?)
     } catch (error) {
       handleError(error, "Failed to delete activity");
-    }
-  }
-
-  async function handleClearAll() {
-    if (!user || !confirm("Are you sure you want to clear all your recent activity? This cannot be undone.")) return;
-    
-    try {
-      const { error } = await supabase
-        .from("usage_logs")
-        .delete()
-        .eq("user_id", user.id);
-      
-      if (error) throw error;
-      setRecentActivity([]);
-    } catch (error) {
-      handleError(error, "Failed to clear all activity");
     }
   }
 
@@ -133,132 +116,212 @@ export default function DashboardPage() {
 
   if (loading) return (
      <div className="flex items-center justify-center h-[60vh]">
-        <div className="w-8 h-8 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin" />
+        <div className="relative w-10 h-10">
+          <div className="w-10 h-10 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin" />
+          <div className="absolute inset-0 m-auto w-3 h-3 bg-brand-400 rounded-full animate-ping" />
+        </div>
      </div>
   );
 
   const limit = dbUser?.plan === "free" ? 30 : 999999;
   const percentage = Math.min((usage / (limit === 999999 ? 100 : limit)) * 100, 100);
 
+  // Tone color mapper to style activity badges based on tone selected - Light High Contrast
+  const getToneBadgeStyle = (tone: string) => {
+    const tones: Record<string, string> = {
+      "Improve Clarity": "bg-cyan-50 border-cyan-100 text-cyan-700",
+      "Make Concise": "bg-teal-50 border-teal-100 text-teal-700",
+      "Fix Grammar": "bg-emerald-50 border-emerald-100 text-emerald-700",
+      "Expand": "bg-indigo-50 border-indigo-100 text-indigo-700",
+      "Professional & Formal": "bg-purple-50 border-purple-100 text-purple-700",
+      "Casual & Conversational": "bg-amber-50 border-amber-100 text-amber-700",
+      "Friendly & Warm": "bg-rose-50 border-rose-100 text-rose-700",
+      "Urgent & Direct": "bg-red-50 border-red-100 text-red-700",
+      "Persuasive & Confident": "bg-orange-50 border-orange-100 text-orange-700",
+      "Academic & Scientific": "bg-blue-50 border-blue-100 text-blue-700",
+    };
+    return tones[tone] || "bg-brand-50 border-brand-100 text-brand-700";
+  };
+
   return (
     <div className="space-y-10">
-      <header>
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2">Overview</h1>
-        <p className="text-text-secondary">Track your writing performance and Writing Buddy activity.</p>
+      <header className="flex items-center justify-between text-left">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight mb-2 text-slate-900">Overview</h1>
+          <p className="text-sm font-semibold text-slate-500 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-brand-500 rounded-full animate-ping" />
+            Track your writing improvements and Writing Buddy status.
+          </p>
+        </div>
       </header>
 
-      {/* Stats Grid */}
+      {/* Top row Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           label="Usage Today"
-          value={usage}
-          subtext={limit === 999999 ? "Unlimited access" : `${limit - usage} remaining today`}
+          value={`${usage} attempts`}
+          subtext={limit === 999999 ? "Unlimited access enabled" : `${limit - usage} remaining for today`}
           icon={TrendingUp}
-          colorClass="bg-brand-500/10 text-brand-400"
+          colorClass="bg-brand-50 border-brand-100 text-brand-600 group-hover:shadow-[0_0_15px_rgba(79,102,241,0.15)]"
+          delay={0}
         />
         <StatCard 
-          label="Current Plan"
-          value={dbUser?.plan || "Free"}
-          subtext={dbUser?.plan === "free" ? "Upgrade for more limits" : "Premium features active"}
+          label="Current Tier"
+          value={dbUser?.plan === "pro" ? "Pro Member" : "Free Tier"}
+          subtext={dbUser?.plan === "free" ? "Upgrade for unlimited rewrites" : "Premium models active"}
           icon={Sparkles}
-          colorClass="bg-accent/10 text-accent"
+          colorClass="bg-purple-5 border-purple-100 text-accent group-hover:shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+          delay={0.1}
         />
-          <div className="glass-card flex flex-col h-full bg-success/5 border-success/10 group hover:bg-success/10 transition-colors duration-300">
-             <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-success/60">Extension</span>
-                <div className="w-10 h-10 rounded-xl bg-success/10 text-success flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                   <Zap size={20} />
-                </div>
-             </div>
-             <div>
-                <h2 className="text-4xl font-extrabold tracking-tight mb-1 text-success">Active</h2>
-                <p className="text-xs text-success/60 flex items-center gap-1.5 line-clamp-1">
-                   WritingBuddy is connected and ready
-                </p>
-             </div>
+        
+        {/* Animated Connected Extension Radar widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="glass-card glass-card-hover flex flex-col justify-between h-full group relative overflow-hidden border-slate-200/50 shadow-[0_15px_30px_rgba(15,23,42,0.02)] hover:border-success/20 hover:bg-success/[0.02]"
+        >
+          <div className="absolute -top-10 -right-10 w-28 h-28 bg-success/5 rounded-full blur-2xl group-hover:bg-success/10 transition-colors" />
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-success/80">Extension Status</span>
+            
+            {/* Concentric live radar ping */}
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <span className="absolute w-5 h-5 rounded-full bg-success/20 animate-pulse-radar" />
+              <span className="absolute w-7 h-7 rounded-full bg-success/10 animate-pulse-radar [animation-delay:0.8s]" />
+              <span className="relative w-3.5 h-3.5 rounded-full bg-success border-2 border-white shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+            </div>
           </div>
+          <div className="text-left">
+            <div className="flex items-baseline gap-2 mb-1">
+              <h2 className="text-3xl font-black tracking-tight text-success flex items-center gap-1.5">
+                Active
+              </h2>
+              <span className="text-[9px] font-black uppercase tracking-wider bg-success/10 border border-success/15 text-success px-2 py-0.5 rounded-md">Live</span>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+              Writing Buddy bridge is connected and ready.
+            </p>
+          </div>
+        </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-         {/* Usage Bar Card */}
-         <div className="glass-card">
-            <div className="flex items-center justify-between mb-8">
-               <h3 className="font-bold">Daily Quota</h3>
-               <span className="text-xs font-bold text-text-muted">{usage} / {limit === 999999 ? '∞' : limit}</span>
+      {/* Main Quota and Activity Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        
+         {/* Circular Radial Quota Meter Card */}
+         <div className="glass-card lg:col-span-2 flex flex-col justify-between border-slate-200/50 text-left">
+            <div>
+               <h3 className="font-extrabold text-lg tracking-tight mb-1 text-slate-900">Daily Quota</h3>
+               <p className="text-xs font-semibold text-slate-400 mb-8">Refreshes every 24 hours.</p>
             </div>
             
-            <div className="h-4 bg-white/5 rounded-full overflow-hidden mb-6">
-               <motion.div 
-                 initial={{ width: 0 }}
-                 animate={{ width: `${percentage}%` }}
-                 transition={{ duration: 1, ease: "easeOut" }}
-                 className="h-full bg-gradient-to-r from-brand-500 to-accent rounded-full"
-               />
+            {/* SVG Progress Circle Ring */}
+            <div className="relative w-40 h-40 flex items-center justify-center mx-auto my-6">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                {/* Background Ring */}
+                <circle cx="50" cy="50" r="38" className="stroke-slate-100" strokeWidth="7" fill="transparent" />
+                {/* Animated Glowing Gradient Circular Ring */}
+                <motion.circle 
+                  cx="50" 
+                  cy="50" 
+                  r="38" 
+                  className="stroke-brand-500" 
+                  strokeWidth="7" 
+                  fill="transparent"
+                  strokeDasharray={238.76}
+                  initial={{ strokeDashoffset: 238.76 }}
+                  animate={{ strokeDashoffset: 238.76 - (238.76 * percentage) / 100 }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  strokeLinecap="round"
+                  style={{
+                    filter: "drop-shadow(0 4px 10px rgba(79, 102, 241, 0.25))"
+                  }}
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center text-center">
+                <span className="text-4xl font-black tracking-tight text-slate-900">{usage}</span>
+                <span className="text-[9px] uppercase font-black text-slate-400 tracking-widest mt-0.5">
+                  {limit === 999999 ? "Unlimited" : `/ ${limit}`}
+                </span>
+              </div>
             </div>
             
-            <p className="text-sm text-text-secondary leading-relaxed">
-               {dbUser?.plan === "free" 
-                 ? "You are currently on the free plan. Upgrade to Pro to get unlimited improvements and access to premium models."
-                 : "You have unlimited improvements. Write away!"
-               }
-            </p>
+            <div className="mt-8 pt-6 border-t border-slate-100">
+              <p className="text-xs font-semibold text-slate-500 leading-relaxed text-center">
+                 {dbUser?.plan === "free" 
+                   ? "Upgrade to Pro to unlock unlimited improvements, access to state-of-the-art Llama models, and faster generation."
+                   : "You have unlimited improvements. Enjoy writing at scale!"
+                 }
+              </p>
+            </div>
          </div>
 
-         {/* Usage History Mockup */}
-          <div className="glass-card">
-             <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
-                   <h3 className="text-sm font-bold tracking-tight">Recent Activity</h3>
-                   <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-text-muted">
-                      {recentActivity.length}
-                   </div>
-                </div>
-                <Link 
-                  href="/app/activity"
-                  className="text-[10px] uppercase tracking-widest font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1.5"
-                >
-                   View Full History <ArrowUpRight size={12} />
-                </Link>
-             </div>
+         {/* Overview Recent Activity list */}
+         <div className="glass-card lg:col-span-3 flex flex-col justify-between border-slate-200/50 text-left">
+            <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-3">
+                  <h3 className="font-extrabold text-lg tracking-tight text-slate-900">Recent Attempts</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-50 border border-slate-150 text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                     {recentActivity.length} logs
+                  </span>
+               </div>
+               <Link 
+                 href="/app/activity"
+                 className="text-[9px] uppercase tracking-widest font-black text-brand-600 hover:text-brand-700 transition-colors flex items-center gap-1 group"
+               >
+                  Full History 
+                  <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+               </Link>
+            </div>
             
-            <div className="space-y-6">
+            <div className="flex-1 space-y-4">
                {recentActivity.length === 0 ? (
-                  <div className="text-center py-8 text-text-muted text-sm">
-                     No recent activity found.
+                  <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
+                     <PenTool size={28} className="text-slate-200 mb-3 animate-float" />
+                     <p className="text-sm font-black text-slate-800">No recent activity found</p>
+                     <p className="text-[10px] text-slate-400 mt-1 font-semibold">Start using the extension to see logs here.</p>
                   </div>
                ) : (
-                  recentActivity.map((log) => (
-                     <div key={log.id} className="flex items-center justify-between pb-6 border-b border-white/5 last:border-0 last:pb-0 group">
-                        <div className="flex items-center gap-4 text-left overflow-hidden">
-                           <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-text-secondary flex-shrink-0">
-                              <PenTool size={18} />
-                           </div>
-                           <div className="overflow-hidden">
-                              <p className="text-sm font-bold truncate">{log.tone || 'General'} Improvement</p>
-                              <p className="text-[11px] text-text-muted truncate">
-                                 {log.source || 'Webpage'} • {formatRelativeTime(log.timestamp)}
-                              </p>
-                              {log.improved_text && (
-                                 <p className="text-[11px] text-text-muted mt-1 italic truncate opacity-60 group-hover:opacity-100 transition-opacity">
-                                    "{log.improved_text}"
-                                 </p>
-                              )}
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                           <div className="text-right hidden sm:block">
-                              <p className="text-[10px] font-bold text-success uppercase tracking-wider">+1 improvement</p>
-                           </div>
-                           <button 
-                             onClick={() => handleDeleteActivity(log.id)}
-                             className="w-8 h-8 rounded-lg bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/20"
-                             title="Delete Activity"
-                           >
-                              <Trash2 size={14} />
-                           </button>
-                        </div>
-                     </div>
-                  ))
+                  <AnimatePresence>
+                    {recentActivity.map((log) => (
+                       <motion.div 
+                         key={log.id} 
+                         initial={{ opacity: 0, x: -10 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         exit={{ opacity: 0, x: 10 }}
+                         className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 hover:bg-slate-50 border border-slate-200/20 hover:border-slate-200/60 shadow-[inset_0_1px_0_white] transition-all duration-300 group"
+                       >
+                          <div className="flex items-center gap-4 text-left overflow-hidden min-w-0 flex-1">
+                             <div className="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-600 flex-shrink-0 border border-brand-500/10 shadow-sm">
+                                <PenTool size={16} />
+                             </div>
+                             <div className="overflow-hidden pr-4">
+                                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                   <span className={cn("text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border", getToneBadgeStyle(log.tone))}>
+                                      {log.tone || 'General'}
+                                   </span>
+                                   <span className="text-[10px] text-slate-400 font-bold">• {formatRelativeTime(log.timestamp)}</span>
+                                </div>
+                                {log.improved_text && (
+                                   <p className="text-xs text-slate-600 font-semibold italic truncate">
+                                      "{log.improved_text}"
+                                   </p>
+                                )}
+                             </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                             <button 
+                               onClick={() => handleDeleteActivity(log.id)}
+                               className="w-8 h-8 rounded-lg bg-white text-slate-400 hover:text-danger hover:bg-danger/10 border border-slate-200/50 hover:border-danger/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                               title="Delete Log"
+                             >
+                                <Trash2 size={13} />
+                             </button>
+                          </div>
+                       </motion.div>
+                    ))}
+                  </AnimatePresence>
                )}
             </div>
          </div>
@@ -266,3 +329,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

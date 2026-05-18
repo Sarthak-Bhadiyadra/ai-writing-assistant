@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AI Writer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,19 +11,19 @@
         }
 
         :root {
-            --surface: #0f1117;
-            --surface-raised: #161923;
-            --surface-overlay: #1c1f2e;
-            --border: #262a3a;
-            --border-light: #2e3348;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --brand-400: #818cf8;
-            --brand-500: #6366f1;
-            --brand-600: #4f46e5;
-            --success: #22c55e;
-            --danger: #ef4444;
+            --surface: #f8fafc;
+            --surface-raised: rgba(255, 255, 255, 0.75);
+            --surface-overlay: rgba(241, 245, 249, 0.65);
+            --border: rgba(226, 232, 240, 0.8);
+            --border-light: rgba(241, 245, 249, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --brand-400: #6366f1;
+            --brand-500: #4f46e5;
+            --brand-600: #3730a3;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
 
         body {
@@ -55,18 +55,20 @@
         .logo-icon {
             width: 32px;
             height: 32px;
-            background: var(--brand-600);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
 
         .logo-text {
             font-size: 15px;
-            font-weight: 700;
-            color: var(--text-primary);
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.019em;
         }
 
         .status-badge {
@@ -74,20 +76,20 @@
             align-items: center;
             gap: 5px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             padding: 4px 10px;
             border-radius: 8px;
         }
 
         .status-badge.online {
-            background: rgba(34, 197, 94, 0.12);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid rgba(34, 197, 94, 0.15);
             color: var(--success);
         }
 
         .status-badge.offline {
-            background: rgba(239, 68, 68, 0.12);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.15);
             color: var(--danger);
         }
 
@@ -106,15 +108,19 @@
             border-radius: 14px;
             padding: 16px;
             margin-bottom: 12px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.02);
+            transition: all 0.25s ease;
         }
 
         .card-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 900;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 10px;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
             display: block;
         }
 
@@ -128,19 +134,19 @@
 
         .usage-count {
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 900;
             color: var(--text-primary);
         }
 
         .usage-limit {
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 700;
             color: var(--text-muted);
         }
 
         .progress-bar {
             height: 6px;
-            background: var(--surface-overlay);
+            background: rgba(226, 232, 240, 0.7);
             border-radius: 100px;
             overflow: hidden;
             margin-bottom: 6px;
@@ -148,7 +154,7 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--brand-500), var(--brand-400));
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
             border-radius: 100px;
             transition: width 0.5s ease;
         }
@@ -159,6 +165,7 @@
 
         .usage-note {
             font-size: 11px;
+            font-weight: 600;
             color: var(--text-muted);
         }
 
@@ -168,21 +175,23 @@
             border-radius: 10px;
             padding: 10px 12px;
             margin-bottom: 6px;
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: 600;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            border: 1px solid transparent;
-            transition: all 0.15s ease;
+            border: 1px solid rgba(226, 232, 240, 0.3);
+            transition: all 0.2s ease;
             cursor: default;
         }
 
         .recent-item:last-child { margin-bottom: 0; }
 
         .recent-item:hover {
-            border-color: var(--border);
-            color: var(--text-primary);
+            border-color: rgba(79, 70, 229, 0.2);
+            background: rgba(79, 70, 229, 0.02);
+            color: #4f46e5;
         }
 
         /* Plan Row */
@@ -193,22 +202,22 @@
         }
 
         .plan-name {
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 800;
             color: var(--text-primary);
             text-transform: capitalize;
         }
 
         .plan-badge {
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 9px;
+            font-weight: 900;
             padding: 3px 8px;
-            background: rgba(99, 102, 241, 0.12);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            color: var(--brand-400);
+            background: rgba(79, 70, 229, 0.05);
+            border: 1px solid rgba(79, 70, 229, 0.15);
+            color: #4f46e5;
             border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.05em;
         }
 
         /* Login CTA */
@@ -231,20 +240,22 @@
             gap: 6px;
             width: 100%;
             padding: 11px 20px;
-            background: var(--brand-600);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             color: white;
             border: none;
             border-radius: 10px;
             font-family: inherit;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: all 0.2s ease;
             text-decoration: none;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);
         }
 
         .btn-primary:hover {
-            background: var(--brand-500);
+            transform: translateY(-0.5px);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.18);
         }
 
         /* Footer */
@@ -253,7 +264,7 @@
             align-items: center;
             justify-content: space-between;
             padding-top: 12px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
         }
 
         .footer-text {
@@ -263,14 +274,14 @@
 
         .footer-link {
             font-size: 11px;
-            font-weight: 600;
-            color: var(--brand-400);
+            font-weight: 700;
+            color: #4f46e5;
             text-decoration: none;
             transition: color 0.15s;
         }
 
         .footer-link:hover {
-            color: var(--brand-500);
+            color: #3730a3;
         }
 
         /* Empty state */

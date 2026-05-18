@@ -118,10 +118,11 @@ function showToast(message: string) {
     toast.textContent = message;
     Object.assign(toast.style, {
         position: 'fixed', top: '20px', right: '20px', zIndex: '2147483647',
-        background: '#161923', color: '#f1f5f9', padding: '12px 20px',
-        borderRadius: '12px', border: '1px solid #262a3a',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
-        fontFamily: "'Inter', -apple-system, sans-serif", fontSize: '13px', fontWeight: '500',
+        background: 'rgba(255, 255, 255, 0.95)', color: '#0f172a', padding: '12px 20px',
+        borderRadius: '12px', border: '1px solid rgba(226, 232, 240, 0.8)',
+        boxShadow: '0 10px 35px rgba(15, 23, 42, 0.05)',
+        backdropFilter: 'blur(12px)', webkitBackdropFilter: 'blur(12px)',
+        fontFamily: "'Inter', -apple-system, sans-serif", fontSize: '13px', fontWeight: '750',
         transition: 'opacity 0.3s ease', opacity: '0',
     });
     document.body.appendChild(toast);
@@ -265,12 +266,12 @@ function showFloatingButton(x: number, y: number) {
         zIndex: '2147483647',
         width: btnSize + 'px',
         height: btnSize + 'px',
-        backgroundColor: '#4f46e5',
+        background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
         color: '#ffffff',
         border: 'none',
         borderRadius: '10px',
         cursor: 'pointer',
-        boxShadow: '0 4px 20px rgba(79, 70, 229, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.3)',
+        boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35), 0 0 0 1px rgba(99, 102, 241, 0.2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -343,13 +344,13 @@ function showUIOverlay(text: string) {
     const container = document.createElement('div');
     container.innerHTML = `
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
             
             * { margin: 0; padding: 0; box-sizing: border-box; }
 
             .backdrop {
                 position: fixed; inset: 0;
-                background: rgba(0, 0, 0, 0.5);
+                background: rgba(15, 23, 42, 0.15);
                 backdrop-filter: blur(4px);
                 z-index: 2147483646;
                 animation: fadeIn 0.2s ease;
@@ -358,15 +359,17 @@ function showUIOverlay(text: string) {
             .modal {
                 position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 width: 480px; max-width: calc(100vw - 32px); max-height: 90vh;
-                background: #0f1117;
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 border-radius: 20px;
-                border: 1px solid #262a3a;
-                box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                box-shadow: 0 30px 70px -10px rgba(15, 23, 42, 0.08);
                 z-index: 2147483647; 
                 font-family: 'Inter', -apple-system, sans-serif; 
                 overflow: hidden;
                 animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                color: #f1f5f9;
+                color: #0f172a;
                 display: flex;
                 flex-direction: column;
             }
@@ -380,8 +383,8 @@ function showUIOverlay(text: string) {
             
             .header { 
                 padding: 16px 20px; 
-                background: #161923;
-                border-bottom: 1px solid #262a3a; 
+                background: rgba(248, 250, 252, 0.55);
+                border-bottom: 1px solid rgba(226, 232, 240, 0.8); 
                 display: flex; 
                 align-items: center; 
                 justify-content: space-between;
@@ -396,23 +399,24 @@ function showUIOverlay(text: string) {
 
             .header-icon {
                 width: 30px; height: 30px;
-                background: #4f46e5;
+                background: linear-gradient(135deg, #4f46e5, #6366f1);
                 border-radius: 8px;
                 display: flex; align-items: center; justify-content: center;
                 color: white;
                 flex-shrink: 0;
+                box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
             }
 
             .header-title { 
                 font-size: 14px; 
-                font-weight: 700; 
-                color: #f1f5f9; 
+                font-weight: 800; 
+                color: #0f172a; 
             }
 
             .header-meta {
                 font-size: 11px;
                 color: #64748b;
-                font-weight: 500;
+                font-weight: 600;
             }
             
             .content { 
@@ -422,21 +426,24 @@ function showUIOverlay(text: string) {
             }
 
             .label {
-                font-size: 12px;
-                font-weight: 600;
-                color: #64748b;
+                font-size: 10px;
+                font-weight: 900;
+                color: #94a3b8;
                 margin-bottom: 6px;
                 display: block;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
             }
 
             textarea { 
                 width: 100%; padding: 12px 14px; 
-                background: #161923;
+                background: rgba(255, 255, 255, 0.85);
                 border-radius: 12px; 
-                border: 1px solid #262a3a; 
-                color: #f1f5f9;
+                border: 1px solid #e2e8f0; 
+                color: #0f172a;
                 font-family: 'Inter', -apple-system, sans-serif;
                 font-size: 13px; 
+                font-weight: 600;
                 line-height: 1.6;
                 margin-bottom: 16px; 
                 box-sizing: border-box; 
@@ -444,28 +451,28 @@ function showUIOverlay(text: string) {
                 resize: vertical;
                 min-height: 70px;
             }
-            textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
-            textarea[readonly] { resize: none; cursor: default; }
-            textarea[readonly]:focus { border-color: #262a3a; box-shadow: none; }
+            textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08); }
+            textarea[readonly] { background: rgba(248, 250, 252, 0.7); resize: none; cursor: default; }
+            textarea[readonly]:focus { border-color: #e2e8f0; box-shadow: none; }
             
             select { 
                 width: 100%; padding: 11px 14px; 
-                background: #161923;
+                background: rgba(255, 255, 255, 0.85);
                 border-radius: 12px; 
-                border: 1px solid #262a3a; 
-                color: #f1f5f9;
+                border: 1px solid #e2e8f0; 
+                color: #0f172a;
                 font-family: 'Inter', -apple-system, sans-serif;
                 font-size: 13px;
-                font-weight: 500;
+                font-weight: 600;
                 margin-bottom: 16px; 
                 cursor: pointer;
                 appearance: none;
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
                 background-repeat: no-repeat;
                 background-position: right 14px center;
-                transition: border-color 0.2s;
+                transition: border-color 0.2s, box-shadow 0.2s;
             }
-            select:focus { outline: none; border-color: #6366f1; }
+            select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08); }
 
             .btn-row {
                 display: flex;
@@ -473,65 +480,65 @@ function showUIOverlay(text: string) {
             }
             
             .btn-primary { 
-                background: #4f46e5; 
+                background: linear-gradient(135deg, #4f46e5, #6366f1); 
                 color: #ffffff; 
                 flex: 1; padding: 12px; 
                 border-radius: 12px; border: none; 
                 font-family: 'Inter', -apple-system, sans-serif;
-                font-weight: 600; 
+                font-weight: 700; 
                 cursor: pointer; 
                 transition: all 0.15s;
                 font-size: 13px;
-                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+                box-shadow: 0 4px 14px rgba(79, 70, 229, 0.18);
                 display: flex; align-items: center; justify-content: center; gap: 6px;
             }
-            .btn-primary:hover { background: #6366f1; }
+            .btn-primary:hover { background: linear-gradient(135deg, #6366f1, #4f46e5); }
             .btn-primary:active { transform: scale(0.98); }
             .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
             .btn-secondary { 
-                background: #161923; 
-                color: #f1f5f9; 
+                background: rgba(255, 255, 255, 0.85); 
+                color: #475569; 
                 flex: 1; padding: 12px; 
                 border-radius: 12px; 
-                border: 1px solid #262a3a; 
+                border: 1px solid #e2e8f0; 
                 font-family: 'Inter', -apple-system, sans-serif;
-                font-weight: 600; 
+                font-weight: 700; 
                 cursor: pointer; 
                 transition: all 0.15s;
                 font-size: 13px;
                 display: flex; align-items: center; justify-content: center; gap: 6px;
             }
-            .btn-secondary:hover { background: #1c1f2e; border-color: #2e3348; }
+            .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
             .btn-secondary:active { transform: scale(0.98); }
 
             .btn-success {
-                background: rgba(34, 197, 94, 0.15);
-                color: #22c55e;
-                border-color: rgba(34, 197, 94, 0.25);
+                background: rgba(34, 197, 94, 0.06);
+                border: 1px solid rgba(34, 197, 94, 0.15);
+                color: #16a34a;
             }
 
             .error-msg {
-                background: rgba(239, 68, 68, 0.1);
-                border: 1px solid rgba(239, 68, 68, 0.2);
-                color: #f87171;
+                background: rgba(239, 68, 68, 0.05);
+                border: 1px solid rgba(239, 68, 68, 0.15);
+                color: #dc2626;
                 padding: 10px 14px;
                 border-radius: 10px;
                 font-size: 12px;
-                font-weight: 500;
+                font-weight: 600;
                 margin-bottom: 12px;
                 line-height: 1.5;
             }
 
             .error-msg a {
-                color: #818cf8;
+                color: #4f46e5;
                 text-decoration: underline;
-                font-weight: 600;
+                font-weight: 700;
                 margin-left: 4px;
                 cursor: pointer;
             }
             .error-msg a:hover {
-                color: #6366f1;
+                color: #3730a3;
             }
 
             .loading-container {
@@ -543,22 +550,22 @@ function showUIOverlay(text: string) {
                 display: inline-block;
                 width: 20px; height: 20px;
                 border: 2.5px solid rgba(99, 102, 241, 0.15);
-                border-top-color: #6366f1;
+                border-top-color: #4f46e5;
                 border-radius: 50%;
                 animation: spin 0.7s linear infinite;
                 margin-bottom: 8px;
             }
 
             .loading-text {
-                color: #94a3b8;
+                color: #64748b;
                 font-size: 12px;
-                font-weight: 500;
+                font-weight: 650;
             }
 
             @keyframes spin { to { transform: rotate(360deg); } }
             
             #close-btn { 
-                color: #64748b; 
+                color: #94a3b8; 
                 transition: all 0.15s; 
                 background: none; 
                 border: none; 
@@ -569,11 +576,11 @@ function showUIOverlay(text: string) {
                 border-radius: 8px;
                 flex-shrink: 0;
             }
-            #close-btn:hover { color: #f1f5f9; background: rgba(255,255,255,0.06); }
+            #close-btn:hover { color: #0f172a; background: rgba(15, 23, 42, 0.05); }
 
             .result-section {
                 padding-top: 4px;
-                border-top: 1px solid #262a3a;
+                border-top: 1px solid rgba(226, 232, 240, 0.8);
                 margin-top: 4px;
             }
 
@@ -586,13 +593,13 @@ function showUIOverlay(text: string) {
 
             .word-diff {
                 font-size: 11px;
-                font-weight: 600;
+                font-weight: 700;
                 padding: 2px 8px;
                 border-radius: 6px;
             }
-            .word-diff.shorter { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
-            .word-diff.longer { background: rgba(99, 102, 241, 0.12); color: #818cf8; }
-            .word-diff.same { background: rgba(148, 163, 184, 0.12); color: #94a3b8; }
+            .word-diff.shorter { background: rgba(34, 197, 94, 0.06); color: #16a34a; }
+            .word-diff.longer { background: rgba(79, 70, 229, 0.06); color: #4f46e5; }
+            .word-diff.same { background: rgba(148, 163, 184, 0.06); color: #475569; }
         </style>
         <div class="backdrop" id="backdrop"></div>
         <div class="modal">
@@ -621,10 +628,14 @@ function showUIOverlay(text: string) {
                 <select id="tone-selector">
                     <option value="Improve Clarity">Improve Clarity</option>
                     <option value="Make Concise">Make Concise</option>
-                    <option value="Formal Tone">Formal Tone</option>
-                    <option value="Friendly Tone">Friendly Tone</option>
                     <option value="Fix Grammar">Fix Grammar</option>
                     <option value="Expand">Expand & Elaborate</option>
+                    <option value="Professional & Formal">Professional & Formal</option>
+                    <option value="Casual & Conversational">Casual & Conversational</option>
+                    <option value="Friendly & Warm">Friendly & Warm</option>
+                    <option value="Urgent & Direct">Urgent & Direct</option>
+                    <option value="Persuasive & Confident">Persuasive & Confident</option>
+                    <option value="Academic & Scientific">Academic & Scientific</option>
                 </select>
 
                 <div id="error-area" style="display:none;">
